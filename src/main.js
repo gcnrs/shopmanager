@@ -4,9 +4,16 @@ import Vue from 'vue'
 import App from './App'
 import Http from './plugins/http'
 import router from './router'
+import moment from 'moment'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/index.css';
+
+
+// 处理日期格式
+Vue.filter('fmtDate',(v)=> {
+  return moment(v).format('YYYY--MM-DD')
+})
 
 // 自己封装的axios插件
 Vue.use(Http);
