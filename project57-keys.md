@@ -577,8 +577,467 @@ this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
 > 把添加用户的对话框复制->修改
 > 用户名输入框 禁用!
 
-#### 23-项目-用户管理-用户列表-编辑用户-显示编辑数据
+### day09-项目-重点
 
-#### 24-项目-用户管理-用户列表-编辑用户-发送请求
+#### 01-项目-用户管理-用户列表-编辑用户-显示编辑数据
 
-#### 25-项目-用户管理-用户列表-修改用户状态
+1. 点击操作的编辑按钮-> 传递了要编辑的数据 scope.row
+2. this.form = user(user 就是 scope.row)
+3. 打开对话框
+
+#### 02-项目-用户管理-用户列表-编辑用户-发送请求
+
+1. 点击对话框的确定按钮->发送请求
+2. `users/${this.form.id}`
+3. 编辑成功->关闭对话框+更新表格
+
+#### 03-项目-用户管理-用户列表-修改用户状态
+
+1. 点击开关->修改用户状态
+
+```html
+<el-switch
+  @change="changeUserState(scope.row)"
+  v-model="scope.row.mg_state"
+  active-color="#13ce66"
+  inactive-color="#ff4949"
+></el-switch>
+```
+
+```js
+ async changeUserState(user) {
+      // uid 用户id
+      // type 用户状态
+      const res = await this.$http.put(
+        `users/${user.id}/state/${user.mg_state}`
+      );
+```
+
+#### 04-项目-用户管理-用户列表-分配角色-功能演示
+
+> 每个用户都需要有一个角色(不同的角色有不同的权限)
+
+1. 点击 check 按钮->打开对话框
+2. 处理下拉框的 option
+3. 显示当前用户的角色
+4. 修改用户角色
+
+#### 05-项目-用户管理-用户列表-分配角色-显示对话框
+
+> 点击操作中的 check 按钮->打开对话框
+> 对话框中有一个下拉框 el-select
+> 给 el-select 绑定的数据 v-model="currUserRoleId"
+
+#### 06-项目-用户管理-用户列表-分配角色-显示对话框-下拉框
+
+> el-select 和 el-option
+
+1. v-model 写在 el-select
+2. v-model 绑定数据的值如果和 option 的 value 一样-> 可以默认选项
+3. 如果修改了 option->v-model 绑定数据的值就是被选中的 option 的 value 值
+   > 获取所有角色信息
+4. 在打开对话框的方法中 发送请求->this.roles = res.data.data
+5. v-for 遍历了 roles
+
+```html
+<el-select v-model="currUserRoleId">
+  <!-- 请选择 -->
+  <el-option label="请选择" :value="-1"></el-option>
+  <!-- v-for遍历 -->
+  <el-option
+    v-for="(v,i) in roles"
+    :key="i"
+    :label="v.roleName"
+    :value="v.id"
+  ></el-option>
+</el-select>
+```
+
+> 注意: label 和 value 的赋值 需要加: (v-bind)
+
+#### 07-项目-用户管理-用户列表-分配角色-显示当前用户角色
+
+> 打开对话框时 显示当前用户名字和用户角色
+
+```js
+async showDiaRole(user) {
+      console.log(user); // 没有当前用户的角色id
+      this.currUserName = user.username;
+      // 获取所有角色
+      const res = await this.$http.get(`roles`);
+      this.roles = res.data.data;
+
+      const res2 = await this.$http.get(`users/${user.id}`);
+      this.currUserRoleId = res2.data.data.rid;
+
+      this.dialogFormVisibleRole = true;
+    },
+```
+
+#### 08-项目-用户管理-用户列表-分配角色-修改用户角色
+
+> 点击确定按钮-》发送分配角色的请求
+
+```js
+ async setRole() {
+      // id -> 用户id -> data中提供currUserId -> 在上一个方法中给currUserId赋值
+      // rid -> 角色id -v-model绑定的值
+
+      const res = await this.$http.put(`users/${this.currUserId}/role`, {
+        rid: this.currUserRoleId
+      });
+      // console.log(res);
+      this.dialogFormVisibleRole = false;
+    },
+
+```
+
+#### 09-项目-用户管理-用户列表-合并分支-推送
+
+1. git status
+2. git add .
+3. git commit -m ""
+4. git branch
+5. git checkout master
+6. git status
+7. git merge dev-users
+8. git push
+
+#### 10-项目-权限管理-新建分支-功能演示
+
+> 权限管理
+
+1. 角色列表
+   1.1 表格
+   1.2 单元格可以展开
+   1.3 操作 check 按钮->树形解构
+2. 权限列表
+   表格展示所有权限数据
+
+#### 11-项目-权限管理-权限列表-新建组件-路由配置
+
+1. 配置导航 rights
+2. 新建组件 rights.vue
+3. 配置路由
+
+#### 12-项目-权限管理-权限列表-自定义面包屑组件
+
+1. 新建自定义组件
+2. 封装面包屑
+3. props 声明数据
+4. main.js 导入
+5. 全局组件
+6. 在所有组件 template 可以通过组件名使用该组件
+   > 通过 name 选项给组件命名-> 组件名字是由组件提供->而不是由使用者提供
+
+#### 13-项目-权限管理-权限列表-获取权限列表数据
+
+1. 设置请求头
+2. 发送请求
+
+```js
+ async getRights() {
+      const AUTH_TOKEN = localStorage.getItem("token");
+      this.$http.defaults.headers.common["Authorization"] = AUTH_TOKEN;
+
+      const res = await this.$http.get(`rights/list`);
+      // console.log(res);
+      const {
+        meta: { msg, status },
+        data
+      } = res.data;
+      if (status === 200) {
+        this.rights = data;
+      } else {
+        this.$message.warning(msg);
+      }
+    }
+```
+
+> 注意: 先 UI 再数据 . 先写数据 再 UI
+
+#### 14-项目-权限管理-权限列表-axios-拦截器统一设置请求头
+
+> 每次发送非登录请求 都需要设置头部信息
+> 利用 axios 请求拦截器去统一设置非登录请求的头部信息
+> axios
+
+1. 请求拦截器作用: 在请求发起后 .then 方法执行前
+   > config 参数就是拦截的所有请求
+2. 响应拦截器
+
+#### 15-项目-权限管理-权限列表-表格展示
+
+1. el-table :data = "rights"
+2. el-table-column type="index" 序号
+3. authName path level
+4. el-table height="固定高"
+
+#### 16-项目-权限管理-权限列表-表格展示-层级显示
+
+1. 组件的内容如果不是 prop 属性 key 的值,此时需要加 template
+2. slot-scope="scope"
+3. 条件渲染 v-if
+
+#### 17-项目-权限管理-角色列表-新建组件-配置路由
+
+1. 配置 index ="roles"
+2. 新建组件 roles.vue
+3. 配置路由
+
+#### 18-项目-权限管理-角色列表-面包屑和添加按钮
+
+1. el-card
+2. my-bread
+3. el-button
+
+#### 19-项目-权限管理-角色列表-获取角色列表数据
+
+> 获取所有角色数据
+> 注意: 给 res 中 有角色信息->每个角色应该有的权限 children
+
+#### 20-项目-权限管理-角色列表-表格展示
+
+> 把之前 uses.vue 的 el-table 复制->修改
+
+1. :data="roles"
+2. type="index"
+3. prop="roleName"
+4. prop="roleDesc"
+
+#### 21-项目-权限管理-角色列表-表格展示-展开行功能分析-实现
+
+1. 看 el-table 能不能展开 -> type="expand"
+2. el-table-column type="expand" template>
+3. 分析布局
+   > 一行>(第一列 4+第二列 20>(一行>(第一列 4+第二列 20)))
+   > el-row>(el-col+el-col>(el-row>(el-col+el-col)))
+   > 所有布局时的行列问题-> for 嵌套-> v-for
+4. 一级权限 el-row v-for
+5. 二级权限 第一行中第二列里面的第一行 v-for in item1.children
+6. 三级权限 第一行中第二列里面的第一行中的第二列 v-for in item2.children
+   > 所有权限名字.authName 权限名字展示在 el-tag 里面
+
+> 注意: 布局行列你可以有自己的布局方式
+
+###day10-项目-重点
+
+#### 01-项目-权限管理-角色列表-展开行-样式调整-处理无权限
+
+1. el-tag 调整样式 margin-top:10px;
+2. closeable X
+3. i class 图标
+4. 处理无权限的展示 v-if="scope.row.children.length===0"
+
+#### 02-项目-权限管理-角色列表-展开行-取消权限
+
+> 点击 el-tag 后面的 X -> 删除/取消 权限
+
+1. @close="deleRights(scope.row,itemX)"
+2. 发送请求 roleid rightsid
+3. 刷新表格
+
+#### 03-项目-权限管理-角色列表-展开行-取消权限-优化
+
+> 只更新当前角色的权限
+> 删除成功后 res 中会有当前角色的剩余权限 res.data.data
+
+```js
+role.children = res.data.data
+```
+
+#### 04-项目-权限管理-角色列表-修改权限-显示对话框
+
+> 点击操作的 check->打开对话框(分配权限)
+
+#### 05-项目-权限管理-角色列表-修改权限-树形结构-文档分析
+
+```js
+//data树形结构绑定的数据
+//    show-checkbox 是否支持选中
+//  node-key 每个节点唯一标识
+//default-expanded-keys 默认展开 [想要展开的节点的id值]
+//default-checked-keys 默认选中 [被选中的节点的id值]
+//props:配置选项 {label,children}
+```
+
+#### 06-项目-权限管理-角色列表-修改权限-树形结构-配置数据
+
+1. 配置 el-tree 所需要的数据
+2. props="{label,children}"
+3. data="所有权限数据"->get(`rights/tree`)
+4. default-expand-all
+5. default-expanded-keys ="arr"
+
+#### 07-项目-权限管理-角色列表-修改权限-树形结构-显示已有权限
+
+> 非叶子节点(全选-半选)
+> 向 default-checked-keys 中添加 id 时 只需要添加最里层的节点 id
+
+```js
+const tempArr = []
+rights.children.forEach(item1 => {
+  // tempArr.push(item1.id);
+  item1.children.forEach(item2 => {
+    // tempArr.push(item2.id);
+    item2.children.forEach(item3 => {
+      tempArr.push(item3.id)
+    })
+  })
+})
+// console.log(tempArr);
+this.checkedArr = tempArr
+```
+
+#### 08-项目-权限管理-角色列表-修改权限-树形结构-分配权限-分析-实现
+
+> 点击确定->发送请求
+
+1. 角色 id ->data 中 currRoleId -> 在上一个给角色 id 赋值
+2. rids:所有全选和半选的节点 id
+   > 在 js 中操作 dom ->ref 操作 dom->
+3. 给要操作的标签设置 ref
+4. this.\$refs.ref 值.js 方法
+
+```js
+
+ async setRights() {
+      // roleId 角色id
+      // rids : 权限id列表
+      // 权限id列表-> 1. 全选的节点  2. 半选的节点
+      // 获取树形结构el-tree全选节点
+      const arr1 = this.$refs.tree.getCheckedKeys();
+      // console.log(arr1);
+      // 获取树形结构el-tree半选节点
+      const arr2 = this.$refs.tree.getHalfCheckedKeys();
+      // console.log(arr2);
+      // ES5 展开操作运算符  ...容器(数组或者对象)
+      const arr = [...arr1, ...arr2];
+      // console.log(arr);
+      const res = await this.$http.post(`roles/${this.currRoleId}/rights`, {
+        rids: arr.join(",")
+      });
+      this.getRoles();
+      this.dialogVisiblerights = false;
+    },
+```
+
+#### 09-项目-首页-侧边栏-动态导航
+
+> 动态渲染侧边栏导航
+
+```html
+<el-menu router default-active="2" :unique-opened="true">
+  <el-submenu
+    :index="''+item1.order"
+    v-for="(item1,i) in menus"
+    :key="item1.id"
+  >
+    <template slot="title">
+      <i class="el-icon-d-arrow-right"></i> <span>{{item1.authName}}</span>
+    </template>
+
+    <el-menu-item
+      :index="item2.path"
+      v-for="(item2,i) in item1.children"
+      :key="item2.id"
+    >
+      <i class="el-icon-location"></i> {{item2.authName}}
+    </el-menu-item>
+  </el-submenu>
+</el-menu>
+```
+
+#### 10-项目-效果演示-不同角色用户登录-显示对应权限
+
+> 请求发起(侧边栏数据)时->设置请求头->使用了当前用户的 token
+> 不同角色的用户登录时 侧边栏导航显示不一样
+
+#### 11-项目-不同角色用户登录-显示对应权限-导航守卫
+
+> 把 home.vue 中 beforeCreate(){判断 token}代码写在了 router 中
+> 路由守卫->路由拦截器
+
+```js
+router.beforeEach((to, from, next) => {
+  // ...
+  // 如果要去的是登录 -> 继续执行路由配置 next()
+  if (to.name === 'login') {
+    next()
+  } else {
+    // 如果要去的是home -> 判断token -> 如果有token -> next() -> 如果没有token->回到login登录
+    const token = localStorage.getItem('token')
+    if (!token) {
+      // js代码编程式导航->去login组件
+      // this.$router->vm.路由对象 -> 路由对象.push
+      // this.$message.warning("请先登录");
+      Message.warning('请先登录')
+
+      router.push({
+        name: 'login'
+      })
+    } else {
+      next()
+    }
+  }
+})
+```
+
+#### 12-项目-权限管理-合并分支-推送-新建分支
+
+1. git status
+2. git branch
+3. git checkout master
+4. git status
+5. git merge dev-rights
+6. git checkout -b dev-goods
+
+#### 13-项目-商品管理-功能演示
+
+1. 商品列表(需要准备好) -> 添加商品 (重新写)
+2. 分类参数
+   2.1 动态参数
+   2.2 静态参数
+3. 商品分类
+   3.1 三级分类
+   3.2 添加分类
+
+#### 14-项目-商品管理-商品列表-显示(提前准备)
+
+1. 02-其他资源中-goodslist.vue
+2. 配置路由,显示组件
+
+#### 15-项目-商品管理-添加商品-新建组件-配置路由-布局
+
+1. 在 goodslist.vue template el-button 编程式导航
+2. 新建组件 goodsadd.vue
+3. 配置路由
+4. el-card>面包屑+el-alert(带有图标的文本提示)
+
+#### 16-项目-商品管理-添加商品-步骤条
+
+> active 属性的值控制的是当前是第几步
+
+```html
+<el-steps :active="1*active" align-center>
+  <el-step title="步骤1"></el-step>
+  <el-step title="步骤2"></el-step>
+  <el-step title="步骤3"></el-step>
+  <el-step title="步骤4"></el-step>
+  <el-step title="步骤5"></el-step>
+</el-steps>
+```
+
+#### 17-项目-商品管理-添加商品-tabs 标签
+
+> 点击 tab->改变 v-model 的属性值 active 变成了 name 的值 "1" -> active="1"->el-steps 的 active 的属性值就是数字 1 -> 当前是第一步
+
+```html
+<el-tabs tab-position="left" v-model="active">
+  <el-tab-pane name="1" label="基本信息">基本信息基本信息</el-tab-pane>
+  <el-tab-pane name="2" label="商品参数">商品参数商品参数</el-tab-pane>
+  <el-tab-pane name="3" label="商品属性">商品属性商品属性</el-tab-pane>
+  <el-tab-pane name="4" label="商品图片">商品图片商品图片</el-tab-pane>
+  <el-tab-pane name="5" label="商品内容">商品内容商品内容</el-tab-pane>
+</el-tabs>
+```
